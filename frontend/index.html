@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OffPay — Offline P2P Payment Simulator & Auto-Settling UPI Gateway</title>
+  <meta name="description" content="OffPay: Offline-first peer-to-peer payment demo with Web Crypto digital signatures, Bluetooth simulation, mesh relaying, and automatic UPI gateway settlement.">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- App Header -->
+  <header class="app-header glass-panel">
+    <div class="brand-wrapper">
+      <div class="brand-icon">⚡</div>
+      <div class="brand-text">
+        <h1>OffPay</h1>
+        <p>Offline Peer-to-Peer Payment Demo with Auto-Settling UPI Gateway</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button id="reset-btn" class="btn-secondary">
+        <span>🔄</span> Reset Demo
+      </button>
+    </div>
+  </header>
+
+  <!-- Trust Tier Strategy Explanation -->
+  <div class="tier-bar">
+    <div class="tier-card tier-green glass-panel">
+      <span class="tier-badge">Tier Green</span>
+      <div>
+        <strong>&lt; ₹500 (Micro)</strong>
+        <p style="color:var(--text-muted);font-size:0.75rem;">Auto-approved instantly offline with RSA-256 signature.</p>
+      </div>
+    </div>
+    <div class="tier-card tier-yellow glass-panel">
+      <span class="tier-badge">Tier Yellow</span>
+      <div>
+        <strong>₹500 – ₹2,000 (Medium)</strong>
+        <p style="color:var(--text-muted);font-size:0.75rem;">Signed offline, marked pending verification until online.</p>
+      </div>
+    </div>
+    <div class="tier-card tier-red glass-panel">
+      <span class="tier-badge">Tier Red</span>
+      <div>
+        <strong>&gt; ₹2,000 (High)</strong>
+        <p style="color:var(--text-muted);font-size:0.75rem;">Blocked offline. Full online biometric/PIN required.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Dual-Device Simulator Arena -->
+  <main class="simulator-arena">
+
+    <!-- Beam overlay line -->
+    <div id="beam-line" class="beam-beam-line"></div>
+
+    <!-- Device A (Payer) -->
+    <section id="device-a-card" class="phone-mockup offline-mode">
+      <div class="phone-header-bar">
+        <span id="clock-a" class="phone-clock">10:42 PM</span>
+        <div class="phone-dynamic-island"></div>
+        <div class="phone-status-icons">
+          <span>📶</span>
+          <span>🔋</span>
+        </div>
+      </div>
+
+      <div class="device-network-strip">
+        <div class="device-identity">
+          <span class="device-name">📱 Device A (Payer)</span>
+          <span class="device-vpa">aarav@okaxis</span>
+        </div>
+        <div class="toggle-wrapper">
+          <span>Online</span>
+          <label class="switch">
+            <input type="checkbox" id="toggle-a">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="phone-content">
+        <!-- Balance Card -->
+        <div class="balance-card">
+          <div class="balance-label">Bank Balance (Axis Bank)</div>
+          <div id="balance-a" class="balance-value">₹10,000</div>
+          <div id="key-badge-a" class="crypto-key-badge">Generating RSA key...</div>
+        </div>
+
+        <!-- Pay Action Box -->
+        <div class="pay-box">
+          <div class="input-label">Send Offline Payment to Bhavna</div>
+          <div class="amount-input-group">
+            <span class="currency-symbol">₹</span>
+            <input type="number" id="amount-input" class="amount-field" placeholder="Enter amount" value="250" min="1" max="5000">
+          </div>
+
+          <!-- Quick Preset Chips -->
+          <div class="quick-chips">
+            <button class="chip-btn green" data-amount="150">₹150 (Green)</button>
+            <button class="chip-btn green" data-amount="450">₹450 (Green)</button>
+            <button class="chip-btn yellow" data-amount="1200">₹1,200 (Yellow)</button>
+            <button class="chip-btn red" data-amount="2500">₹2,500 (Red)</button>
+          </div>
+
+          <button id="pay-btn" class="btn-primary">
+            <span>✍️</span> Generate Signed Voucher
+          </button>
+        </div>
+
+        <!-- Outbox Queue -->
+        <div class="device-queue">
+          <div class="queue-title">
+            <span>Offline Outbox</span>
+            <span>Local Secure Enclave</span>
+          </div>
+          <div id="outbox-list-a" class="queue-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Center Control Bridge -->
+    <section class="bridge-center-column">
+      <!-- Beam Button Card -->
+      <div class="beam-trigger-card glass-panel">
+        <div style="font-size:0.8rem;font-weight:700;color:var(--accent-cyan);text-transform:uppercase;letter-spacing:0.5px;">
+          Bluetooth BLE Beam
+        </div>
+        <button id="tap-beam-btn" class="pulse-btn" title="Simulate Near Tap BLE Handshake">
+          📡
+        </button>
+        <p style="font-size:0.75rem;color:var(--text-muted);line-height:1.3;">
+          Tap to simulate <strong>Nearby BLE Handshake</strong> between Phone A and Phone B.
+        </p>
+      </div>
+
+      <!-- Device C (Mesh Relay Node) -->
+      <div class="mesh-relay-card glass-panel">
+        <div class="mesh-header">
+          <span>📡 Mesh Relay Node (Chetan)</span>
+          <span id="relay-status-dot" class="mesh-status-indicator"></span>
+        </div>
+        <p style="font-size:0.72rem;color:var(--text-muted);">
+          Third-party peer nearby that can relay vouchers to NPCI if A & B are offline.
+        </p>
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.75rem;">
+          <span>In BLE Range</span>
+          <label class="switch" style="width:36px;height:20px;">
+            <input type="checkbox" id="toggle-c-range" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.75rem;">
+          <span>Relay Online</span>
+          <label class="switch" style="width:36px;height:20px;">
+            <input type="checkbox" id="toggle-c-online" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <!-- Device B (Receiver) -->
+    <section id="device-b-card" class="phone-mockup offline-mode">
+      <div class="phone-header-bar">
+        <span id="clock-b" class="phone-clock">10:42 PM</span>
+        <div class="phone-dynamic-island"></div>
+        <div class="phone-status-icons">
+          <span>📶</span>
+          <span>🔋</span>
+        </div>
+      </div>
+
+      <div class="device-network-strip">
+        <div class="device-identity">
+          <span class="device-name">📱 Device B (Receiver)</span>
+          <span class="device-vpa">bhavna@okhdfc</span>
+        </div>
+        <div class="toggle-wrapper">
+          <span>Online</span>
+          <label class="switch">
+            <input type="checkbox" id="toggle-b">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="phone-content">
+        <!-- Balance Card -->
+        <div class="balance-card">
+          <div class="balance-label">Bank Balance (HDFC Bank)</div>
+          <div id="balance-b" class="balance-value">₹3,500</div>
+          <div id="key-badge-b" class="crypto-key-badge">Generating RSA key...</div>
+        </div>
+
+        <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:var(--radius-sm);padding:12px;font-size:0.78rem;color:var(--text-muted);">
+          💡 <strong>Receiver Workflow:</strong> Receives signed offline vouchers via Nearby BLE Beam. When internet restores (or through Mesh Relay C), vouchers automatically push to UPI gateway for settlement.
+        </div>
+
+        <!-- Inbox Queue -->
+        <div class="device-queue">
+          <div class="queue-title">
+            <span>Received Vouchers</span>
+            <span>Settlement Queue</span>
+          </div>
+          <div id="inbox-list-b" class="queue-list"></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Bottom Section: NPCI Global Ledger & Tamper Security Lab -->
+  <section class="bottom-section">
+    <!-- Real-time NPCI Settlement Ledger -->
+    <div class="ledger-container glass-panel">
+      <div class="section-header">
+        <div class="section-title">
+          <span>🏦</span> NPCI / UPI Gateway Settlement Ledger
+        </div>
+        <span id="ledger-count" style="font-size:0.8rem;color:var(--text-muted);font-family:var(--font-mono);">0 records</span>
+      </div>
+
+      <div class="ledger-table-wrap">
+        <table class="ledger-table">
+          <thead>
+            <tr>
+              <th>Voucher ID</th>
+              <th>Amount</th>
+              <th>Trust Tier</th>
+              <th>NPCI Status</th>
+              <th>Mock UPI Ref</th>
+              <th>Time</th>
+            </tr>
+          </thead>
+          <tbody id="ledger-tbody">
+            <tr>
+              <td colspan="6" style="text-align:center;color:var(--text-dim);padding:20px;">
+                No transactions recorded yet.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Security & Fraud Tamper Lab -->
+    <div class="tamper-lab glass-panel">
+      <div class="section-title">
+        <span>🛡️</span> Security & Tamper Lab
+      </div>
+      <p>
+        Offline vouchers are secured with <strong>RSA-256 digital signatures</strong>. If a malicious actor intercepts and modifies an offline voucher (e.g. inflating ₹100 to ₹10,000), the backend cryptographic validator detects the hash mismatch and immediately rejects it.
+      </p>
+
+      <div class="tamper-action-box">
+        <div style="font-size:0.8rem;font-weight:700;color:var(--tier-red);margin-bottom:6px;">
+          Simulate Attack Vector:
+        </div>
+        <p style="font-size:0.75rem;color:var(--text-muted);margin-bottom:10px;">
+          Inject an altered voucher payload with forged signature to test NPCI rejection.
+        </p>
+        <button id="tamper-btn" class="btn-secondary" style="width:100%;border-color:rgba(239,68,68,0.5);color:#fca5a5;justify-content:center;">
+          <span>⚠️</span> Test Tamper Rejection (Fraud)
+        </button>
+      </div>
+
+      <div style="font-size:0.72rem;color:var(--text-dim);line-height:1.3;">
+        🔒 <strong>Anti-Double-Spend:</strong> Each voucher contains a unique cryptographically signed nonce and timestamp.
+      </div>
+    </div>
+  </section>
+
+  <!-- Toast Container -->
+  <div id="toast-container"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+{
+  "name": "offpay",
+  "version": "1.0.0",
+  "description": "OffPay: Offline-First Peer-to-Peer Payment Demo with Auto-Settling UPI Gateway",
+  "main": "backend/server.js",
+  "scripts": {
+    "start": "node backend/server.js",
+    "dev": "node backend/server.js"
+  },
+  "keywords": [
+    "offline-payment",
+    "p2p",
+    "mesh-relay",
+    "upi-settlement",
+    "webcrypto",
+    "hackathon"
+  ],
+  "author": "OffPay Team",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2"
+  }
+}

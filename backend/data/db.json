@@ -1,0 +1,21 @@
+{
+  "accounts": {
+    "user-a@offpay": {
+      "name": "Aarav Sharma (Device A)",
+      "balance": 10000,
+      "upiVpa": "aarav@okaxis"
+    },
+    "user-b@offpay": {
+      "name": "Bhavna Patel (Device B)",
+      "balance": 3500,
+      "upiVpa": "bhavna@okhdfc"
+    },
+    "relay-c@offpay": {
+      "name": "Chetan (Mesh Relay C)",
+      "balance": 1200,
+      "upiVpa": "chetan@oksbi"
+    }
+  },
+  "transactions": [],
+  "settlementLog": []
+}
