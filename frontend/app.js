@@ -572,6 +572,7 @@ async function fetchLedger() {
     renderDeviceA();
     renderDeviceB();
     renderLedgerTable();
+    renderRecentCards();
   } catch (e) {
     // Backend loading
   }
@@ -668,6 +669,65 @@ function renderLedgerTable() {
   });
 }
 
+// Render Recent Transactions Stream (Cards with Avatar Initials)
+function renderRecentCards() {
+  const container = document.getElementById('recent-cards-container');
+  if (!container) return;
+
+  if (state.transactions.length === 0) {
+    container.innerHTML = `<div class="glass-panel" style="padding:20px;text-align:center;color:var(--text-dim);font-size:0.8rem;grid-column:1/-1;">No peer transactions recorded this session. Create a signed voucher above!</div>`;
+    return;
+  }
+
+  container.innerHTML = '';
+  // Show up to 6 recent transactions as cards
+  const recents = state.transactions.slice(0, 6);
+
+  recents.forEach(tx => {
+    const card = document.createElement('div');
+    card.className = 'recent-card';
+
+    const payer = (tx.payerId || '').toLowerCase();
+    let avatarClass = 'rahul';
+    let initials = 'RS';
+    let name = 'Rahul Sharma';
+
+    if (payer.includes('priya')) {
+      avatarClass = 'priya';
+      initials = 'PP';
+      name = 'Priya Patel';
+    } else if (payer.includes('aarav')) {
+      avatarClass = 'aarav';
+      initials = 'AV';
+      name = 'Aarav Verma';
+    }
+
+    let statusPill = `<span class="status-pill queued">QUEUED</span>`;
+    if (tx.status === 'SETTLED') statusPill = `<span class="status-pill settled">✓ SETTLED</span>`;
+    else if (tx.status === 'SETTLING_NPCI') statusPill = `<span class="status-pill settling">⚡ SETTLING</span>`;
+    else if (tx.status === 'BLOCKED') statusPill = `<span class="status-pill blocked">✕ BLOCKED</span>`;
+    else if (tx.status === 'FAILED_FRAUD') statusPill = `<span class="status-pill fraud">🚫 FRAUD</span>`;
+    else if (tx.status === 'DUPLICATE_DOUBLE_SPEND') statusPill = `<span class="status-pill fraud">⚠️ REPLAY</span>`;
+
+    const timeStr = new Date(tx.settledAt || tx.createdAt || tx.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    card.innerHTML = `
+      <div class="avatar-circle ${avatarClass}">${initials}</div>
+      <div class="recent-card-body">
+        <div class="recent-card-top">
+          <span class="recent-card-name">${name}</span>
+          <span class="recent-card-amount">₹${Number(tx.amount).toLocaleString('en-IN')}</span>
+        </div>
+        <div class="recent-card-bottom">
+          <span>${statusPill}</span>
+          <span>${timeStr}</span>
+        </div>
+      </div>
+    `;
+    container.appendChild(card);
+  });
+}
+
 // Chart.js Live Graphs Initialization & Updates
 function initCharts() {
   if (typeof Chart === 'undefined') return;
@@ -724,6 +784,34 @@ function initCharts() {
       }
     });
   }
+
+  // Timeframe buttons (Day / Week / Month)
+  document.querySelectorAll('.time-filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.time-filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const range = btn.getAttribute('data-range');
+      state.chartRange = range;
+      audio.playTap();
+
+      if (volumeChartInstance) {
+        if (range === 'day') {
+          volumeChartInstance.data.labels = ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00'];
+          volumeChartInstance.data.datasets[0].data = [2, 4, 3, 5, 4, 6, state.transactions.length];
+          volumeChartInstance.data.datasets[1].data = [1, 3, 2, 4, 4, 5, state.transactions.filter(t => t.status === 'SETTLED').length];
+        } else if (range === 'week') {
+          volumeChartInstance.data.labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+          volumeChartInstance.data.datasets[0].data = [12, 18, 14, 22, 19, 28, 20 + state.transactions.length];
+          volumeChartInstance.data.datasets[1].data = [10, 16, 13, 20, 18, 26, 18 + state.transactions.filter(t => t.status === 'SETTLED').length];
+        } else if (range === 'month') {
+          volumeChartInstance.data.labels = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
+          volumeChartInstance.data.datasets[0].data = [45, 62, 58, 80 + state.transactions.length];
+          volumeChartInstance.data.datasets[1].data = [42, 58, 55, 76 + state.transactions.filter(t => t.status === 'SETTLED').length];
+        }
+        volumeChartInstance.update();
+      }
+    });
+  });
 
   // Chart 2: Status Breakdown (Doughnut Chart)
   const ctxBreakdown = document.getElementById('breakdownChart');

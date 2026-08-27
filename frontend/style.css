@@ -1078,6 +1078,106 @@ input:checked + .slider:before {
   line-height: 1.35;
 }
 
+/* Recent Transactions Cards Grid */
+.recent-tx-section {
+  max-width: 1320px;
+  margin: 0 auto 26px auto;
+}
+
+.recent-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.recent-card {
+  background: var(--bg-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.recent-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.avatar-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.9rem;
+  background: linear-gradient(135deg, rgba(0, 217, 181, 0.2), rgba(56, 189, 248, 0.2));
+  color: var(--accent-teal);
+  border: 1px solid rgba(0, 217, 181, 0.3);
+  flex-shrink: 0;
+}
+
+.avatar-circle.rahul {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.25), rgba(168, 85, 247, 0.25));
+  color: #a5b4fc;
+  border-color: rgba(99, 102, 241, 0.4);
+}
+
+.avatar-circle.priya {
+  background: linear-gradient(135deg, rgba(0, 217, 181, 0.25), rgba(16, 185, 129, 0.25));
+  color: #6ee7b7;
+  border-color: rgba(0, 217, 181, 0.4);
+}
+
+.avatar-circle.aarav {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.25), rgba(239, 68, 68, 0.25));
+  color: #fde68a;
+  border-color: rgba(245, 158, 11, 0.4);
+}
+
+.recent-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.recent-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.recent-card-name {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.recent-card-amount {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.recent-card-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.72rem;
+  color: var(--text-dim);
+}
+
 /* Bottom Section (Ledger & Attack Lab) */
 .bottom-section {
   display: grid;
