@@ -1,21 +1,116 @@
 {
   "accounts": {
-    "user-a@offpay": {
-      "name": "Aarav Sharma (Device A)",
-      "balance": 10000,
-      "upiVpa": "aarav@okaxis"
+    "rahul@offpay": {
+      "name": "Rahul Sharma (Device A)",
+      "balance": 9750,
+      "upiVpa": "rahul@okaxis",
+      "avatar": "RS"
     },
-    "user-b@offpay": {
-      "name": "Bhavna Patel (Device B)",
-      "balance": 3500,
-      "upiVpa": "bhavna@okhdfc"
+    "priya@offpay": {
+      "name": "Priya Patel (Device B)",
+      "balance": 5250,
+      "upiVpa": "priya@okhdfc",
+      "avatar": "PP"
     },
-    "relay-c@offpay": {
+    "aarav@offpay": {
+      "name": "Aarav Verma (Device A/B)",
+      "balance": 7500,
+      "upiVpa": "aarav@okicici",
+      "avatar": "AV"
+    },
+    "chetan@offpay": {
       "name": "Chetan (Mesh Relay C)",
-      "balance": 1200,
-      "upiVpa": "chetan@oksbi"
+      "balance": 1500,
+      "upiVpa": "chetan@oksbi",
+      "avatar": "CR"
     }
   },
-  "transactions": [],
-  "settlementLog": []
+  "transactions": [
+    {
+      "voucherId": "VOUCH-TEST-GREEN-1",
+      "payerId": "rahul@offpay",
+      "receiverId": "priya@offpay",
+      "amount": 250,
+      "currency": "INR",
+      "tier": "GREEN",
+      "nonce": "NONCE-111",
+      "timestamp": "2026-08-27T03:48:13.093Z",
+      "signature": "UXV33UI9FtHrpoSAQTNsILqL1bF72fkh7xbIX2DV5ngLcKpcfefaxop6YHDGzC4lv2idjzSX9QbvSm+fpc/i0zC6i+p+by8GWqT3te552YwSlPf4yGmO4FkC9VITDOSMH7Gk3O7N5I018sR0mojLog2IDDAkTaZALzXnvUHvQx16Ng2ly7T4ZXXEVuPStyx/fZY6eg22nSAeUc0pv7qzup2prTg3QRoekdvrl0An+a/5JExEYXA3aJ0FzUD+VYd/BNVKw5+4S8bEHJBUNeK9/PPk4VUo9OtnqVzYx6ucpgg0eoDuKdxefOIl6496pD0Wsu6QlrH6GwfIk0CYYcVDfA==",
+      "publicKey": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAlM9RRPAU1d9iIitmxikR1Gotbrm7qFhOOLDAmahLLiKwhUIMZmZftBg9uHLZsrJkpkKXyF2AvfjkpDZxaeR+ps9UPLGZljoM+giq3T2j1q4GgCVUo8sSUoZQasPCi9VdpGTzrPjBGN4iBNtkz8d9bkS3Q4jzxapmbbTjPV2tau1T78BDGRhdlBJ13xAjzjO2DTRjvTJAMZRKQD3XskMJXKtzeyiCrxavDe8cb55qgifz1HQzOKnWrhY4uULGdhIXrGRfczg4GLDnsl0bZLt/34jQ7v/Gu0bd7eFSct6lhBRHZOZXVmvSlC6d+yyR+GvTjMeb6NY5TixIo8IhHrJWHQIDAQAB",
+      "status": "SETTLED",
+      "receivedAt": "2026-08-27T03:48:13.108Z",
+      "relayNode": "DIRECT",
+      "createdAt": "2026-08-27T03:48:13.108Z",
+      "updatedAt": "2026-08-27T03:48:14.321Z",
+      "upiRef": "UPI/364680808088/AXIS/OK",
+      "settledAt": "2026-08-27T03:48:14.320Z",
+      "npciStatus": "SUCCESS",
+      "relayPath": "Payer (rahul@offpay) -> Receiver (priya@offpay) -> NPCI Gateway"
+    },
+    {
+      "voucherId": "VOUCH-TEST-GREEN-1-REPLAY-mtazg1a4",
+      "payerId": "rahul@offpay",
+      "receiverId": "priya@offpay",
+      "amount": 250,
+      "currency": "INR",
+      "tier": "GREEN",
+      "nonce": "NONCE-111",
+      "timestamp": "2026-08-27T03:48:13.093Z",
+      "signature": "UXV33UI9FtHrpoSAQTNsILqL1bF72fkh7xbIX2DV5ngLcKpcfefaxop6YHDGzC4lv2idjzSX9QbvSm+fpc/i0zC6i+p+by8GWqT3te552YwSlPf4yGmO4FkC9VITDOSMH7Gk3O7N5I018sR0mojLog2IDDAkTaZALzXnvUHvQx16Ng2ly7T4ZXXEVuPStyx/fZY6eg22nSAeUc0pv7qzup2prTg3QRoekdvrl0An+a/5JExEYXA3aJ0FzUD+VYd/BNVKw5+4S8bEHJBUNeK9/PPk4VUo9OtnqVzYx6ucpgg0eoDuKdxefOIl6496pD0Wsu6QlrH6GwfIk0CYYcVDfA==",
+      "publicKey": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAlM9RRPAU1d9iIitmxikR1Gotbrm7qFhOOLDAmahLLiKwhUIMZmZftBg9uHLZsrJkpkKXyF2AvfjkpDZxaeR+ps9UPLGZljoM+giq3T2j1q4GgCVUo8sSUoZQasPCi9VdpGTzrPjBGN4iBNtkz8d9bkS3Q4jzxapmbbTjPV2tau1T78BDGRhdlBJ13xAjzjO2DTRjvTJAMZRKQD3XskMJXKtzeyiCrxavDe8cb55qgifz1HQzOKnWrhY4uULGdhIXrGRfczg4GLDnsl0bZLt/34jQ7v/Gu0bd7eFSct6lhBRHZOZXVmvSlC6d+yyR+GvTjMeb6NY5TixIo8IhHrJWHQIDAQAB",
+      "originalVoucherId": "VOUCH-TEST-GREEN-1",
+      "status": "DUPLICATE_DOUBLE_SPEND",
+      "rejectionReason": "⚠️ Double-spend attack blocked! Original Voucher ID 'VOUCH-TEST-GREEN-1' was already executed and settled on the UPI ledger.",
+      "settledAt": "2026-08-27T03:48:14.333Z",
+      "createdAt": "2026-08-27T03:48:14.333Z",
+      "updatedAt": "2026-08-27T03:48:14.333Z"
+    },
+    {
+      "voucherId": "VOUCH-TEST-RED-2",
+      "payerId": "rahul@offpay",
+      "receiverId": "priya@offpay",
+      "amount": 2500,
+      "currency": "INR",
+      "tier": "RED",
+      "nonce": "NONCE-222",
+      "timestamp": "2026-08-27T03:48:14.336Z",
+      "signature": "UXV33UI9FtHrpoSAQTNsILqL1bF72fkh7xbIX2DV5ngLcKpcfefaxop6YHDGzC4lv2idjzSX9QbvSm+fpc/i0zC6i+p+by8GWqT3te552YwSlPf4yGmO4FkC9VITDOSMH7Gk3O7N5I018sR0mojLog2IDDAkTaZALzXnvUHvQx16Ng2ly7T4ZXXEVuPStyx/fZY6eg22nSAeUc0pv7qzup2prTg3QRoekdvrl0An+a/5JExEYXA3aJ0FzUD+VYd/BNVKw5+4S8bEHJBUNeK9/PPk4VUo9OtnqVzYx6ucpgg0eoDuKdxefOIl6496pD0Wsu6QlrH6GwfIk0CYYcVDfA==",
+      "publicKey": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAlM9RRPAU1d9iIitmxikR1Gotbrm7qFhOOLDAmahLLiKwhUIMZmZftBg9uHLZsrJkpkKXyF2AvfjkpDZxaeR+ps9UPLGZljoM+giq3T2j1q4GgCVUo8sSUoZQasPCi9VdpGTzrPjBGN4iBNtkz8d9bkS3Q4jzxapmbbTjPV2tau1T78BDGRhdlBJ13xAjzjO2DTRjvTJAMZRKQD3XskMJXKtzeyiCrxavDe8cb55qgifz1HQzOKnWrhY4uULGdhIXrGRfczg4GLDnsl0bZLt/34jQ7v/Gu0bd7eFSct6lhBRHZOZXVmvSlC6d+yyR+GvTjMeb6NY5TixIo8IhHrJWHQIDAQAB",
+      "status": "BLOCKED",
+      "rejectionReason": "Exceeds offline transaction limit (Tier Red > ₹2,000). Active online authentication required.",
+      "settledAt": "2026-08-27T03:48:14.341Z",
+      "createdAt": "2026-08-27T03:48:14.341Z",
+      "updatedAt": "2026-08-27T03:48:14.341Z"
+    },
+    {
+      "voucherId": "VOUCH-TEST-TAMPER-3",
+      "payerId": "rahul@offpay",
+      "receiverId": "priya@offpay",
+      "amount": 499,
+      "currency": "INR",
+      "tier": "GREEN",
+      "nonce": "NONCE-333",
+      "timestamp": "2026-08-27T03:48:14.344Z",
+      "signature": "INVALID_FORGED_SIGNATURE_AAAAAAAAAAAAAAAAAAAAAAAA",
+      "publicKey": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAlM9RRPAU1d9iIitmxikR1Gotbrm7qFhOOLDAmahLLiKwhUIMZmZftBg9uHLZsrJkpkKXyF2AvfjkpDZxaeR+ps9UPLGZljoM+giq3T2j1q4GgCVUo8sSUoZQasPCi9VdpGTzrPjBGN4iBNtkz8d9bkS3Q4jzxapmbbTjPV2tau1T78BDGRhdlBJ13xAjzjO2DTRjvTJAMZRKQD3XskMJXKtzeyiCrxavDe8cb55qgifz1HQzOKnWrhY4uULGdhIXrGRfczg4GLDnsl0bZLt/34jQ7v/Gu0bd7eFSct6lhBRHZOZXVmvSlC6d+yyR+GvTjMeb6NY5TixIo8IhHrJWHQIDAQAB",
+      "status": "FAILED_FRAUD",
+      "rejectionReason": "Security verification failed: Cryptographic signature mismatch (tampering detected)",
+      "settledAt": "2026-08-27T03:48:14.350Z",
+      "createdAt": "2026-08-27T03:48:14.350Z",
+      "updatedAt": "2026-08-27T03:48:14.350Z"
+    }
+  ],
+  "settledNonces": {
+    "NONCE-111": {
+      "voucherId": "VOUCH-TEST-GREEN-1",
+      "settledAt": "2026-08-27T03:48:14.319Z"
+    }
+  },
+  "metrics": {
+    "totalSettledAmount": 0,
+    "blockedAttempts": 1,
+    "fraudAttempts": 1,
+    "doubleSpendAttempts": 1,
+    "relayForwardCount": 0
+  }
 }

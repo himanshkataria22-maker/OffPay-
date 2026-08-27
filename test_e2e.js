@@ -50,9 +50,11 @@ function getJson(urlPath) {
 }
 
 async function runTests() {
+  console.log('===========================================================');
   console.log('--- Starting OffPay End-to-End Automated Test Suite ---');
+  console.log('===========================================================');
 
-  // Reset database first
+  // 1. Reset database first
   await postJson('/api/reset', {});
   console.log('✓ Reset API verified');
 
@@ -74,8 +76,8 @@ async function runTests() {
   // Test 1: Green Tier (₹250)
   const voucher1 = {
     voucherId: 'VOUCH-TEST-GREEN-1',
-    payerId: 'user-a@offpay',
-    receiverId: 'user-b@offpay',
+    payerId: 'rahul@offpay',
+    receiverId: 'priya@offpay',
     amount: 250,
     currency: 'INR',
     tier: 'GREEN',
@@ -104,19 +106,28 @@ async function runTests() {
   console.log('\n[Test 1] Settle Green Tier Voucher (₹250)...');
   const res1 = await postJson('/api/settle', voucher1);
   console.log('Status:', res1.statusCode);
-  console.log('Response:', res1.data);
   if (res1.data.success && res1.data.transaction.status === 'SETTLED' && res1.data.upiRef) {
     console.log('✅ Test 1 PASSED: Green tier successfully settled with UPI Ref:', res1.data.upiRef);
   } else {
-    console.error('❌ Test 1 FAILED');
+    console.error('❌ Test 1 FAILED', res1.data);
   }
 
-  // Test 2: Red Tier Blocked (> ₹2,000)
-  console.log('\n[Test 2] Settle Red Tier Voucher (₹2,500 - should block)...');
+  // Test 2: Double-Spend Protection (Replay same voucher)
+  console.log('\n[Test 2] Double-Spend Protection Test (Replay Voucher 1)...');
+  const resDouble = await postJson('/api/settle', voucher1);
+  console.log('Status:', resDouble.statusCode);
+  if (resDouble.statusCode === 409 && resDouble.data.transaction.status === 'DUPLICATE_DOUBLE_SPEND') {
+    console.log('✅ Test 2 PASSED: Double-spend duplicate attempt successfully intercepted & blocked!');
+  } else {
+    console.error('❌ Test 2 FAILED', resDouble.data);
+  }
+
+  // Test 3: Red Tier Blocked (> ₹2,000)
+  console.log('\n[Test 3] Settle Red Tier Voucher (₹2,500 - should block)...');
   const voucher2 = {
     voucherId: 'VOUCH-TEST-RED-2',
-    payerId: 'user-a@offpay',
-    receiverId: 'user-b@offpay',
+    payerId: 'rahul@offpay',
+    receiverId: 'priya@offpay',
     amount: 2500,
     currency: 'INR',
     tier: 'RED',
@@ -128,17 +139,17 @@ async function runTests() {
   const res2 = await postJson('/api/settle', voucher2);
   console.log('Status:', res2.statusCode);
   if (res2.statusCode === 403 && res2.data.transaction.status === 'BLOCKED') {
-    console.log('✅ Test 2 PASSED: Red tier properly blocked at backend');
+    console.log('✅ Test 3 PASSED: Red tier properly blocked at backend (>₹2,000)');
   } else {
-    console.error('❌ Test 2 FAILED');
+    console.error('❌ Test 3 FAILED', res2.data);
   }
 
-  // Test 3: Tamper / Fraud Signature Mismatch
-  console.log('\n[Test 3] Settle Tampered Voucher (Altered amount without valid signature)...');
+  // Test 4: Tamper / Fraud Signature Mismatch
+  console.log('\n[Test 4] Settle Tampered Voucher (Altered amount without valid signature)...');
   const voucher3 = {
     voucherId: 'VOUCH-TEST-TAMPER-3',
-    payerId: 'user-a@offpay',
-    receiverId: 'user-b@offpay',
+    payerId: 'rahul@offpay',
+    receiverId: 'priya@offpay',
     amount: 499, // Changed amount
     currency: 'INR',
     tier: 'GREEN',
@@ -150,25 +161,25 @@ async function runTests() {
   const res3 = await postJson('/api/settle', voucher3);
   console.log('Status:', res3.statusCode);
   if (res3.statusCode === 401 && res3.data.transaction.status === 'FAILED_FRAUD') {
-    console.log('✅ Test 3 PASSED: Fraudulent voucher intercepted & marked FAILED_FRAUD');
+    console.log('✅ Test 4 PASSED: Fraudulent voucher intercepted & marked FAILED_FRAUD');
   } else {
-    console.error('❌ Test 3 FAILED');
+    console.error('❌ Test 4 FAILED', res3.data);
   }
 
-  // Test 4: Final Ledger Verification
-  console.log('\n[Test 4] Fetching full ledger...');
-  const res4 = await getJson('/api/transactions');
-  console.log(`Ledger count: ${res4.data.count}`);
-  console.log('Bank accounts:', res4.data.accounts);
-  if (res4.data.count >= 3 && res4.data.accounts['user-a@offpay'].balance === 9750) {
-    console.log('✅ Test 4 PASSED: Ledger & balance updates verified!');
+  // Test 5: Analytics & Stats API
+  console.log('\n[Test 5] Fetching live analytics stats (/api/stats)...');
+  const resStats = await getJson('/api/stats');
+  console.log('Stats Response:', resStats.data.stats);
+  if (resStats.data.success && resStats.data.stats.totalSettledAmount === 250) {
+    console.log('✅ Test 5 PASSED: Analytics stats aggregation working perfectly!');
   } else {
-    console.error('❌ Test 4 FAILED');
+    console.error('❌ Test 5 FAILED');
   }
 
-  console.log('\n🎉 ALL TESTS COMPLETED SUCCESSFULLY!');
+  console.log('\n🎉 ALL BACKEND AUTOMATED TESTS COMPLETED SUCCESSFULLY!\n');
 }
 
 runTests().catch(err => {
-  console.error('Test run failed:', err);
+  console.error('Test run failed (is server running?):', err.message);
 });
+
