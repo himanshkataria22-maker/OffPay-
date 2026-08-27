@@ -244,16 +244,61 @@ async function initKeys() {
     state.deviceA.keys = await CryptoEngine.generateKeyPair();
     state.deviceB.keys = await CryptoEngine.generateKeyPair();
 
-    const shortKeyA = state.deviceA.keys.publicKeyBase64.substring(0, 16) + '...';
-    const shortKeyB = state.deviceB.keys.publicKeyBase64.substring(0, 16) + '...';
+    const shortKeyA = state.deviceA.keys.publicKeyBase64.substring(0, 10) + '...';
+    const shortKeyB = state.deviceB.keys.publicKeyBase64.substring(0, 10) + '...';
 
-    if (el.keyBadgeA) el.keyBadgeA.textContent = `RSA-256 Enclave Key: ${shortKeyA}`;
-    if (el.keyBadgeB) el.keyBadgeB.textContent = `RSA-256 Enclave Key: ${shortKeyB}`;
+    if (el.keyBadgeA) el.keyBadgeA.textContent = `RSA Key: ${shortKeyA}`;
+    if (el.keyBadgeB) el.keyBadgeB.textContent = `RSA Key: ${shortKeyB}`;
+  } catch (e) {
+    console.error('Error generating RSA Keys:', e);
+  }
+}
 
-    console.log('[CRYPTO] RSA-256 Enclave Keypairs Generated for Device A & Device B');
-  } catch (err) {
-    console.error('Failed to initialize keys:', err);
-    showToast('Failed to generate crypto keys', 'error');
+// Update modal payer & receiver names
+function updateModalAccounts() {
+  const payerDisplay = document.getElementById('modal-payer-display');
+  const receiverDisplay = document.getElementById('modal-receiver-display');
+  if (payerDisplay) payerDisplay.textContent = `${state.deviceA.name} (${state.deviceA.id})`;
+  if (receiverDisplay) receiverDisplay.textContent = `${state.deviceB.name} (${state.deviceB.id})`;
+}
+
+// Update Trust Tier preview inside Payment Modal
+function updateModalTierPreview(amount) {
+  const previewBox = document.getElementById('modal-tier-preview');
+  const badge = document.getElementById('modal-tier-badge');
+  const text = document.getElementById('modal-tier-text');
+  if (!previewBox || !badge || !text) return;
+
+  const amt = Number(amount) || 0;
+  if (amt <= 0) {
+    badge.className = 'tier-badge';
+    badge.textContent = 'Enter Amount';
+    text.textContent = 'Specify voucher value above';
+    previewBox.className = 'tier-preview-box';
+  } else if (amt <= 500) {
+    badge.className = 'tier-badge green';
+    badge.textContent = 'Tier 1: Green (< ₹500)';
+    text.textContent = 'Auto-approved instantly offline via RSA-256';
+    previewBox.className = 'tier-preview-box tier-green';
+  } else if (amt <= 2000) {
+    badge.className = 'tier-badge yellow';
+    badge.textContent = 'Tier 2: Yellow (₹500 - ₹2,000)';
+    text.textContent = 'Signed offline, held pending verification on reconnect';
+    previewBox.className = 'tier-preview-box tier-yellow';
+  } else {
+    badge.className = 'tier-badge red';
+    badge.textContent = 'Tier 3: Red (> ₹2,000)';
+    text.textContent = 'Blocked offline. Full online 2-factor auth required';
+    previewBox.className = 'tier-preview-box tier-red';
+  }
+}
+
+// Check auto mesh expand when both devices offline
+function checkMeshAutoExpand() {
+  const meshContainer = document.getElementById('mesh-relay-container');
+  if (!meshContainer) return;
+  if (state.deviceA.network === 'none' && state.deviceB.network === 'none') {
+    meshContainer.classList.remove('collapsed');
   }
 }
 
@@ -618,19 +663,45 @@ function updateInsights(stats) {
   if (el.insightDoublespend) {
     el.insightDoublespend.textContent = `${metrics.doubleSpendAttempts || 0} double-spend replay attempts intercepted & blocked by Nonce engine.`;
   }
+
+  // Update Compact Pills
+  const pillTamper = document.getElementById('pill-tamper-val');
+  const pillRelay = document.getElementById('pill-relay-val');
+  const pillDoublespend = document.getElementById('pill-doublespend-val');
+  if (pillTamper) pillTamper.textContent = `${metrics.fraudAttempts || 0} Intercepted`;
+  if (pillRelay) pillRelay.textContent = `${metrics.relayForwardCount || 0} Relayed`;
+  if (pillDoublespend) pillDoublespend.textContent = `${metrics.doubleSpendAttempts || 0} Blocked`;
 }
+
+// Global toggle for insight card highlight
+window.toggleInsightDetail = function(cardId) {
+  const card = document.getElementById(cardId);
+  if (!card) return;
+  card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  card.style.borderColor = 'var(--accent-teal)';
+  card.style.boxShadow = '0 0 15px rgba(0,217,181,0.3)';
+  setTimeout(() => {
+    card.style.borderColor = '';
+    card.style.boxShadow = '';
+  }, 1500);
+};
 
 // Render Real-Time NPCI Ledger Table
 function renderLedgerTable() {
   if (el.ledgerCount) el.ledgerCount.textContent = `${state.transactions.length} record(s)`;
+  const tabCount = document.getElementById('tab-ledger-count');
+  if (tabCount) tabCount.textContent = state.transactions.length;
+
   el.ledgerBody.innerHTML = '';
 
   if (state.transactions.length === 0) {
-    el.ledgerBody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--text-dim);padding:24px;">No transactions recorded in NPCI ledger yet. Create an offline voucher above!</td></tr>`;
+    el.ledgerBody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--text-dim);padding:20px;">No transactions recorded in NPCI ledger yet.</td></tr>`;
     return;
   }
 
-  state.transactions.forEach(tx => {
+  const txsToRender = state.showFullLedger ? state.transactions : state.transactions.slice(0, 3);
+
+  txsToRender.forEach(tx => {
     const tr = document.createElement('tr');
 
     let statusBadge = `<span class="status-pill queued">QUEUED</span>`;
@@ -641,9 +712,9 @@ function renderLedgerTable() {
     } else if (tx.status === 'BLOCKED') {
       statusBadge = `<span class="status-pill blocked">✕ BLOCKED (>₹2k)</span>`;
     } else if (tx.status === 'FAILED_FRAUD') {
-      statusBadge = `<span class="status-pill fraud">🚫 FRAUD (TAMPERED)</span>`;
+      statusBadge = `<span class="status-pill fraud">🚫 FRAUD</span>`;
     } else if (tx.status === 'DUPLICATE_DOUBLE_SPEND') {
-      statusBadge = `<span class="status-pill fraud">⚠️ REPLAY BLOCKED</span>`;
+      statusBadge = `<span class="status-pill fraud">⚠️ REPLAY</span>`;
     }
 
     const timeFormatted = new Date(tx.settledAt || tx.createdAt || tx.timestamp).toLocaleTimeString();
@@ -651,19 +722,19 @@ function renderLedgerTable() {
     const receiverName = (tx.receiverId || 'unknown').split('@')[0];
 
     tr.innerHTML = `
-      <td style="font-family:var(--font-mono);font-size:0.75rem;color:var(--accent-teal);">${tx.voucherId}</td>
-      <td style="font-size:0.78rem;">${payerName} → ${receiverName}</td>
+      <td style="font-family:var(--font-mono);font-size:0.72rem;color:var(--accent-teal);">${tx.voucherId}</td>
+      <td style="font-size:0.75rem;">${payerName} → ${receiverName}</td>
       <td style="font-weight:700;">₹${Number(tx.amount).toLocaleString('en-IN')}</td>
       <td>
-        <span class="tier-badge ${tx.tier ? tx.tier.toLowerCase() : 'green'}" style="font-size:0.65rem;">
+        <span class="tier-badge ${tx.tier ? tx.tier.toLowerCase() : 'green'}" style="font-size:0.62rem;">
           ${tx.tier || 'GREEN'}
         </span>
       </td>
       <td>${statusBadge}</td>
-      <td style="font-family:var(--font-mono);font-size:0.75rem;color:#a5b4fc;">
+      <td style="font-family:var(--font-mono);font-size:0.72rem;color:#a5b4fc;">
         ${tx.upiRef || '<span style="color:var(--text-dim)">—</span>'}
       </td>
-      <td style="font-size:0.75rem;color:var(--text-muted);">${timeFormatted}</td>
+      <td style="font-size:0.72rem;color:var(--text-muted);">${timeFormatted}</td>
     `;
     el.ledgerBody.appendChild(tr);
   });
@@ -675,13 +746,13 @@ function renderRecentCards() {
   if (!container) return;
 
   if (state.transactions.length === 0) {
-    container.innerHTML = `<div class="glass-panel" style="padding:20px;text-align:center;color:var(--text-dim);font-size:0.8rem;grid-column:1/-1;">No peer transactions recorded this session. Create a signed voucher above!</div>`;
+    container.innerHTML = `<div class="glass-panel" style="padding:14px;text-align:center;color:var(--text-dim);font-size:0.75rem;grid-column:1/-1;">No peer transactions recorded this session. Create a voucher above!</div>`;
     return;
   }
 
   container.innerHTML = '';
-  // Show up to 6 recent transactions as cards
-  const recents = state.transactions.slice(0, 6);
+  // Show up to 3 recent transactions as cards
+  const recents = state.transactions.slice(0, 3);
 
   recents.forEach(tx => {
     const card = document.createElement('div');
@@ -768,7 +839,7 @@ function initCharts() {
         plugins: {
           legend: {
             position: 'top',
-            labels: { color: '#94a3b8', font: { family: 'Inter', size: 11 } }
+            labels: { color: '#94a3b8', font: { family: 'Inter', size: 10 } }
           }
         },
         scales: {
@@ -1006,6 +1077,7 @@ function setupEvents() {
         el.signalIconA.textContent = '📵 Off';
         showToast('Device A switched to Offline / Airplane mode', 'info');
       }
+      checkMeshAutoExpand();
     });
   });
 
@@ -1032,6 +1104,7 @@ function setupEvents() {
         el.signalIconB.textContent = '📵 Off';
         showToast('Device B switched to Offline / Airplane mode', 'info');
       }
+      checkMeshAutoExpand();
     });
   });
 
@@ -1042,6 +1115,7 @@ function setupEvents() {
     state.deviceA.name = name;
     el.vpaA.textContent = state.deviceA.id.replace('@offpay', '@okaxis');
     initKeys();
+    updateModalAccounts();
     fetchLedger();
     showToast(`Switched Device A user to ${name}`, 'info');
   });
@@ -1052,9 +1126,111 @@ function setupEvents() {
     state.deviceB.name = name;
     el.vpaB.textContent = state.deviceB.id.replace('@offpay', '@okhdfc');
     initKeys();
+    updateModalAccounts();
     fetchLedger();
     showToast(`Switched Device B user to ${name}`, 'info');
   });
+
+  // Payment Modal Triggers
+  const payModal = document.getElementById('payment-modal');
+  const openPayModalBtn = document.getElementById('open-pay-modal-btn');
+  const closePayModalBtn = document.getElementById('close-pay-modal-btn');
+
+  if (openPayModalBtn && payModal) {
+    openPayModalBtn.addEventListener('click', () => {
+      updateModalAccounts();
+      updateModalTierPreview(el.amountInput ? el.amountInput.value : 250);
+      payModal.classList.add('active');
+      audio.playTap();
+    });
+  }
+
+  if (closePayModalBtn && payModal) {
+    closePayModalBtn.addEventListener('click', () => {
+      payModal.classList.remove('active');
+    });
+    payModal.addEventListener('click', (e) => {
+      if (e.target === payModal) payModal.classList.remove('active');
+    });
+  }
+
+  // Key Inspector Modal Triggers
+  const keyModal = document.getElementById('key-modal');
+  const closeKeyModalBtn = document.getElementById('close-key-modal-btn');
+  const copyKeyBtn = document.getElementById('copy-key-btn');
+  const fullKeyTextarea = document.getElementById('full-key-textarea');
+  const viewKeyABtn = document.getElementById('view-key-a-btn');
+  const viewKeyBBtn = document.getElementById('view-key-b-btn');
+
+  if (viewKeyABtn && keyModal) {
+    viewKeyABtn.addEventListener('click', () => {
+      document.getElementById('key-modal-title').textContent = `${state.deviceA.name}'s RSA Key`;
+      fullKeyTextarea.value = state.deviceA.keys ? state.deviceA.keys.publicKeyBase64 : 'Key not loaded';
+      keyModal.classList.add('active');
+      audio.playTap();
+    });
+  }
+
+  if (viewKeyBBtn && keyModal) {
+    viewKeyBBtn.addEventListener('click', () => {
+      document.getElementById('key-modal-title').textContent = `${state.deviceB.name}'s RSA Key`;
+      fullKeyTextarea.value = state.deviceB.keys ? state.deviceB.keys.publicKeyBase64 : 'Key not loaded';
+      keyModal.classList.add('active');
+      audio.playTap();
+    });
+  }
+
+  if (closeKeyModalBtn && keyModal) {
+    closeKeyModalBtn.addEventListener('click', () => {
+      keyModal.classList.remove('active');
+    });
+    keyModal.addEventListener('click', (e) => {
+      if (e.target === keyModal) keyModal.classList.remove('active');
+    });
+  }
+
+  if (copyKeyBtn && fullKeyTextarea) {
+    copyKeyBtn.addEventListener('click', () => {
+      fullKeyTextarea.select();
+      navigator.clipboard.writeText(fullKeyTextarea.value);
+      showToast('Enclave public key copied to clipboard!', 'success');
+    });
+  }
+
+  // Tab Navigation Handling
+  document.querySelectorAll('.tab-nav-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-nav-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+      btn.classList.add('active');
+      const tabId = btn.getAttribute('data-tab');
+      const content = document.getElementById(tabId);
+      if (content) content.classList.add('active');
+      audio.playTap();
+    });
+  });
+
+  // Mesh Relay Accordion Header Click
+  const meshHeader = document.getElementById('mesh-accordion-header');
+  const meshContainer = document.getElementById('mesh-relay-container');
+  if (meshHeader && meshContainer) {
+    meshHeader.addEventListener('click', () => {
+      meshContainer.classList.toggle('collapsed');
+      audio.playTap();
+    });
+  }
+
+  // Toggle Full Ledger View
+  const toggleLedgerBtn = document.getElementById('toggle-full-ledger-btn');
+  if (toggleLedgerBtn) {
+    toggleLedgerBtn.addEventListener('click', () => {
+      state.showFullLedger = !state.showFullLedger;
+      toggleLedgerBtn.innerHTML = state.showFullLedger ? '<span>📄</span> Show Compact Ledger (Top 3)' : '<span>📜</span> View Full Ledger Table';
+      renderLedgerTable();
+      audio.playTap();
+    });
+  }
 
   // Toggle C (Mesh Relay)
   el.toggleCOnline.addEventListener('change', (e) => {
@@ -1073,17 +1249,26 @@ function setupEvents() {
     triggerAutoSettlementCheck();
   });
 
-  // Pay Button
+  // Pay Button in Modal
   el.payBtn.addEventListener('click', () => {
     const val = el.amountInput.value;
     createVoucher(val);
+    if (payModal) payModal.classList.remove('active');
   });
+
+  // Amount input real-time tier preview
+  if (el.amountInput) {
+    el.amountInput.addEventListener('input', (e) => {
+      updateModalTierPreview(e.target.value);
+    });
+  }
 
   // Quick Amount Chips
   document.querySelectorAll('.chip-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const amount = btn.getAttribute('data-amount');
-      el.amountInput.value = amount;
+      if (el.amountInput) el.amountInput.value = amount;
+      updateModalTierPreview(amount);
       audio.playTap();
     });
   });
@@ -1118,3 +1303,4 @@ async function startApp() {
 }
 
 window.addEventListener('DOMContentLoaded', startApp);
+
