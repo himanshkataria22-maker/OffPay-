@@ -799,14 +799,96 @@ function renderRecentCards() {
   });
 }
 
+// View Routing & Navigation Management
+const viewTitles = {
+  'view-dashboard': 'Dashboard',
+  'view-devices': 'Devices & Payments',
+  'view-analytics': 'Analytics & Charts',
+  'view-ledger': 'Settlement Ledger',
+  'view-security': 'Security Simulator',
+  'view-settings': 'Settings & Config'
+};
+
+function switchView(viewId) {
+  const targetView = document.getElementById(viewId);
+  if (!targetView) return;
+
+  // Toggle page view
+  document.querySelectorAll('.page-view').forEach(view => {
+    view.classList.remove('active');
+  });
+  targetView.classList.add('active');
+
+  // Toggle sidebar active nav item
+  document.querySelectorAll('.nav-item').forEach(item => {
+    if (item.getAttribute('data-view') === viewId) {
+      item.classList.add('active');
+    } else {
+      item.classList.remove('active');
+    }
+  });
+
+  // Update Breadcrumbs
+  const crumb = document.getElementById('crumb-current');
+  if (crumb && viewTitles[viewId]) {
+    crumb.textContent = viewTitles[viewId];
+  }
+
+  // Update Charts on visibility changes
+  if (viewId === 'view-dashboard' && volumeChartInstance) {
+    setTimeout(() => volumeChartInstance.resize(), 50);
+  }
+  if (viewId === 'view-analytics') {
+    if (volumeChartAnalyticsInstance) setTimeout(() => volumeChartAnalyticsInstance.resize(), 50);
+    if (breakdownChartInstance) setTimeout(() => breakdownChartInstance.resize(), 50);
+  }
+
+  audio.playTap();
+}
+window.switchView = switchView;
+
+// Global helper for opening payment modal
+function openPaymentModal() {
+  const payModal = document.getElementById('payment-modal');
+  if (payModal) {
+    updateModalAccounts();
+    updateModalTierPreview(el.amountInput ? el.amountInput.value : 250);
+    payModal.classList.add('active');
+    audio.playTap();
+  }
+}
+window.openPaymentModal = openPaymentModal;
+
+// Global helper for opening key modal
+function openKeyModal(device) {
+  const keyModal = document.getElementById('key-modal');
+  const fullKeyTextarea = document.getElementById('full-key-textarea');
+  const keyModalTitle = document.getElementById('key-modal-title');
+  if (!keyModal || !fullKeyTextarea) return;
+
+  if (device === 'a') {
+    if (keyModalTitle) keyModalTitle.textContent = `${state.deviceA.name}'s Enclave RSA Key`;
+    fullKeyTextarea.value = state.deviceA.keys ? state.deviceA.keys.publicKeyBase64 : 'Key not loaded';
+  } else {
+    if (keyModalTitle) keyModalTitle.textContent = `${state.deviceB.name}'s Enclave RSA Key`;
+    fullKeyTextarea.value = state.deviceB.keys ? state.deviceB.keys.publicKeyBase64 : 'Key not loaded';
+  }
+
+  keyModal.classList.add('active');
+  audio.playTap();
+}
+window.openKeyModal = openKeyModal;
+
 // Chart.js Live Graphs Initialization & Updates
+let volumeChartAnalyticsInstance = null;
+
 function initCharts() {
   if (typeof Chart === 'undefined') return;
 
-  // Chart 1: Volume Over Time (Line / Area Chart)
-  const ctxVolume = document.getElementById('volumeChart');
-  if (ctxVolume) {
-    volumeChartInstance = new Chart(ctxVolume, {
+  // Chart 1 (Dashboard Compact Volume Chart)
+  const ctxVolumeDash = document.getElementById('volumeChart');
+  if (ctxVolumeDash) {
+    volumeChartInstance = new Chart(ctxVolumeDash, {
       type: 'line',
       data: {
         labels: ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00'],
@@ -856,6 +938,59 @@ function initCharts() {
     });
   }
 
+  // Chart 1 (Analytics Page Detailed Volume Chart)
+  const ctxVolumeAnalytics = document.getElementById('volumeChartAnalytics');
+  if (ctxVolumeAnalytics) {
+    volumeChartAnalyticsInstance = new Chart(ctxVolumeAnalytics, {
+      type: 'line',
+      data: {
+        labels: ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00'],
+        datasets: [
+          {
+            label: 'Queued Offline',
+            data: [2, 4, 3, 5, 4, 6, 4],
+            borderColor: '#f59e0b',
+            backgroundColor: 'rgba(245, 158, 11, 0.12)',
+            fill: true,
+            tension: 0.4,
+            borderWidth: 2,
+            pointRadius: 4
+          },
+          {
+            label: 'Settled via UPI',
+            data: [1, 3, 2, 4, 4, 5, 3],
+            borderColor: '#00D9B5',
+            backgroundColor: 'rgba(0, 217, 181, 0.18)',
+            fill: true,
+            tension: 0.4,
+            borderWidth: 2,
+            pointRadius: 4
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'top',
+            labels: { color: '#94a3b8', font: { family: 'Inter', size: 11 } }
+          }
+        },
+        scales: {
+          x: {
+            grid: { color: 'rgba(255,255,255,0.05)' },
+            ticks: { color: '#64748b', font: { family: 'Inter', size: 10 } }
+          },
+          y: {
+            grid: { color: 'rgba(255,255,255,0.05)' },
+            ticks: { color: '#64748b', font: { family: 'Inter', size: 10 } }
+          }
+        }
+      }
+    });
+  }
+
   // Timeframe buttons (Day / Week / Month)
   document.querySelectorAll('.time-filter-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -865,22 +1000,26 @@ function initCharts() {
       state.chartRange = range;
       audio.playTap();
 
-      if (volumeChartInstance) {
+      const updateTargetChart = (instance) => {
+        if (!instance) return;
         if (range === 'day') {
-          volumeChartInstance.data.labels = ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00'];
-          volumeChartInstance.data.datasets[0].data = [2, 4, 3, 5, 4, 6, state.transactions.length];
-          volumeChartInstance.data.datasets[1].data = [1, 3, 2, 4, 4, 5, state.transactions.filter(t => t.status === 'SETTLED').length];
+          instance.data.labels = ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00'];
+          instance.data.datasets[0].data = [2, 4, 3, 5, 4, 6, state.transactions.length];
+          instance.data.datasets[1].data = [1, 3, 2, 4, 4, 5, state.transactions.filter(t => t.status === 'SETTLED').length];
         } else if (range === 'week') {
-          volumeChartInstance.data.labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-          volumeChartInstance.data.datasets[0].data = [12, 18, 14, 22, 19, 28, 20 + state.transactions.length];
-          volumeChartInstance.data.datasets[1].data = [10, 16, 13, 20, 18, 26, 18 + state.transactions.filter(t => t.status === 'SETTLED').length];
+          instance.data.labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+          instance.data.datasets[0].data = [12, 18, 14, 22, 19, 28, 20 + state.transactions.length];
+          instance.data.datasets[1].data = [10, 16, 13, 20, 18, 26, 18 + state.transactions.filter(t => t.status === 'SETTLED').length];
         } else if (range === 'month') {
-          volumeChartInstance.data.labels = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
-          volumeChartInstance.data.datasets[0].data = [45, 62, 58, 80 + state.transactions.length];
-          volumeChartInstance.data.datasets[1].data = [42, 58, 55, 76 + state.transactions.filter(t => t.status === 'SETTLED').length];
+          instance.data.labels = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
+          instance.data.datasets[0].data = [45, 62, 58, 80 + state.transactions.length];
+          instance.data.datasets[1].data = [42, 58, 55, 76 + state.transactions.filter(t => t.status === 'SETTLED').length];
         }
-        volumeChartInstance.update();
-      }
+        instance.update();
+      };
+
+      updateTargetChart(volumeChartInstance);
+      updateTargetChart(volumeChartAnalyticsInstance);
     });
   });
 
@@ -953,6 +1092,13 @@ function updateCharts(stats) {
     volumeChartInstance.data.datasets[0].data = stats.chartVolume.queued;
     volumeChartInstance.data.datasets[1].data = stats.chartVolume.settled;
     volumeChartInstance.update();
+  }
+
+  if (volumeChartAnalyticsInstance && stats.chartVolume) {
+    volumeChartAnalyticsInstance.data.labels = stats.chartVolume.labels;
+    volumeChartAnalyticsInstance.data.datasets[0].data = stats.chartVolume.queued;
+    volumeChartAnalyticsInstance.data.datasets[1].data = stats.chartVolume.settled;
+    volumeChartAnalyticsInstance.update();
   }
 
   if (breakdownChartInstance && stats.chartBreakdown) {
@@ -1054,6 +1200,31 @@ async function resetDemo() {
 
 // Event Listeners Setup
 function setupEvents() {
+  // Sidebar Navigation Click Handlers
+  document.querySelectorAll('.nav-item').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const viewId = btn.getAttribute('data-view');
+      switchView(viewId);
+    });
+  });
+
+  // Sidebar Collapse/Expand Toggle Button
+  const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
+  const sidebar = document.getElementById('app-sidebar');
+  if (sidebarToggleBtn && sidebar) {
+    sidebarToggleBtn.addEventListener('click', () => {
+      sidebar.classList.toggle('collapsed');
+      sidebar.classList.toggle('mobile-open');
+      audio.playTap();
+    });
+  }
+
+  // Top Bar Action Buttons
+  const topPayBtn = document.getElementById('top-pay-btn');
+  if (topPayBtn) {
+    topPayBtn.addEventListener('click', openPaymentModal);
+  }
+
   // 3-State Network Signal Controls for Device A
   document.querySelectorAll('.sig-btn[data-device="a"]').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -1137,12 +1308,7 @@ function setupEvents() {
   const closePayModalBtn = document.getElementById('close-pay-modal-btn');
 
   if (openPayModalBtn && payModal) {
-    openPayModalBtn.addEventListener('click', () => {
-      updateModalAccounts();
-      updateModalTierPreview(el.amountInput ? el.amountInput.value : 250);
-      payModal.classList.add('active');
-      audio.playTap();
-    });
+    openPayModalBtn.addEventListener('click', openPaymentModal);
   }
 
   if (closePayModalBtn && payModal) {
@@ -1162,23 +1328,8 @@ function setupEvents() {
   const viewKeyABtn = document.getElementById('view-key-a-btn');
   const viewKeyBBtn = document.getElementById('view-key-b-btn');
 
-  if (viewKeyABtn && keyModal) {
-    viewKeyABtn.addEventListener('click', () => {
-      document.getElementById('key-modal-title').textContent = `${state.deviceA.name}'s RSA Key`;
-      fullKeyTextarea.value = state.deviceA.keys ? state.deviceA.keys.publicKeyBase64 : 'Key not loaded';
-      keyModal.classList.add('active');
-      audio.playTap();
-    });
-  }
-
-  if (viewKeyBBtn && keyModal) {
-    viewKeyBBtn.addEventListener('click', () => {
-      document.getElementById('key-modal-title').textContent = `${state.deviceB.name}'s RSA Key`;
-      fullKeyTextarea.value = state.deviceB.keys ? state.deviceB.keys.publicKeyBase64 : 'Key not loaded';
-      keyModal.classList.add('active');
-      audio.playTap();
-    });
-  }
+  if (viewKeyABtn) viewKeyABtn.addEventListener('click', () => openKeyModal('a'));
+  if (viewKeyBBtn) viewKeyBBtn.addEventListener('click', () => openKeyModal('b'));
 
   if (closeKeyModalBtn && keyModal) {
     closeKeyModalBtn.addEventListener('click', () => {
@@ -1197,37 +1348,12 @@ function setupEvents() {
     });
   }
 
-  // Tab Navigation Handling
-  document.querySelectorAll('.tab-nav-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.tab-nav-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-
-      btn.classList.add('active');
-      const tabId = btn.getAttribute('data-tab');
-      const content = document.getElementById(tabId);
-      if (content) content.classList.add('active');
-      audio.playTap();
-    });
-  });
-
   // Mesh Relay Accordion Header Click
   const meshHeader = document.getElementById('mesh-accordion-header');
   const meshContainer = document.getElementById('mesh-relay-container');
   if (meshHeader && meshContainer) {
     meshHeader.addEventListener('click', () => {
       meshContainer.classList.toggle('collapsed');
-      audio.playTap();
-    });
-  }
-
-  // Toggle Full Ledger View
-  const toggleLedgerBtn = document.getElementById('toggle-full-ledger-btn');
-  if (toggleLedgerBtn) {
-    toggleLedgerBtn.addEventListener('click', () => {
-      state.showFullLedger = !state.showFullLedger;
-      toggleLedgerBtn.innerHTML = state.showFullLedger ? '<span>📄</span> Show Compact Ledger (Top 3)' : '<span>📜</span> View Full Ledger Table';
-      renderLedgerTable();
       audio.playTap();
     });
   }
@@ -1303,4 +1429,5 @@ async function startApp() {
 }
 
 window.addEventListener('DOMContentLoaded', startApp);
+
 

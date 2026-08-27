@@ -2,13 +2,13 @@
   "accounts": {
     "rahul@offpay": {
       "name": "Rahul Sharma (Device A)",
-      "balance": 10000,
+      "balance": 9750,
       "upiVpa": "rahul@okaxis",
       "avatar": "RS"
     },
     "priya@offpay": {
       "name": "Priya Patel (Device B)",
-      "balance": 5000,
+      "balance": 5250,
       "upiVpa": "priya@okhdfc",
       "avatar": "PP"
     },
@@ -25,13 +25,92 @@
       "avatar": "CR"
     }
   },
-  "transactions": [],
-  "settledNonces": {},
+  "transactions": [
+    {
+      "voucherId": "VOUCH-TEST-GREEN-1",
+      "payerId": "rahul@offpay",
+      "receiverId": "priya@offpay",
+      "amount": 250,
+      "currency": "INR",
+      "tier": "GREEN",
+      "nonce": "NONCE-111",
+      "timestamp": "2026-08-27T04:40:09.682Z",
+      "signature": "Tjctoujh65oZ+6yUmYgsRebT6Cr7p41+LOIl2yPX4q2cK6AdQ22PXd6Q9zo3/BwN90uDDTdN4ZMYWdJRFpLaUIp1eyiSSzmO2N75KqEvftIRenluDQuL8D3FQ3LAcj7AoWSUdRsdcul3ztGDuAffZmMd5jvs+vrswobb388hJtFUmJaj62fDgJsFaFdDXIjt5KST5v7TX8biLZ8jSgTFRUvqjfnvg1cCYCIqYzw013nQCOGCYpt/h/ZjOA+XB6ea8Tkl93PM6w9g00wU9GdamxLrYyg8eS1nXb1gafAU08DpvNHqwVG4OFUQccB/KyRNlN3LKjaojKaPte+MTs9XEw==",
+      "publicKey": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwLSIjoeRkmvrP0S48TH3DN/7PI4Zq6cROTdvYty+RYW5tPgNDRfAK6MLEqU1PcRMSsLiyKQhFS5QVr6D03j3nZ7yIxVckh+f01J1rNUmqnooRsUhawXZV6QPe8B1JaqtLSzJaDLaUyjLqym1LVfsWmAEnDzq/HD3VG4/SS/NYRJzXeArz/vWbDduaCZ97y4JmOjOiiRNwqRYn9mIY7T82Ycdz+WA7TE0XbK8UBEFkd/G06lckbuOLqGZc4A06Wv4FcTQn3gzdVFmMUKQRyYVFhlGftLRXKG/Ze+s0oiMtWhZR73XL9Uo+fiauYdW4CxPPnFw9CgvPh9arPdDCKbVKwIDAQAB",
+      "status": "SETTLED",
+      "receivedAt": "2026-08-27T04:40:09.697Z",
+      "relayNode": "DIRECT",
+      "createdAt": "2026-08-27T04:40:09.697Z",
+      "updatedAt": "2026-08-27T04:40:10.920Z",
+      "upiRef": "UPI/208035706032/AXIS/OK",
+      "settledAt": "2026-08-27T04:40:10.919Z",
+      "npciStatus": "SUCCESS",
+      "relayPath": "Payer (rahul@offpay) -> Receiver (priya@offpay) -> NPCI Gateway"
+    },
+    {
+      "voucherId": "VOUCH-TEST-GREEN-1-REPLAY-mtb1au2j",
+      "payerId": "rahul@offpay",
+      "receiverId": "priya@offpay",
+      "amount": 250,
+      "currency": "INR",
+      "tier": "GREEN",
+      "nonce": "NONCE-111",
+      "timestamp": "2026-08-27T04:40:09.682Z",
+      "signature": "Tjctoujh65oZ+6yUmYgsRebT6Cr7p41+LOIl2yPX4q2cK6AdQ22PXd6Q9zo3/BwN90uDDTdN4ZMYWdJRFpLaUIp1eyiSSzmO2N75KqEvftIRenluDQuL8D3FQ3LAcj7AoWSUdRsdcul3ztGDuAffZmMd5jvs+vrswobb388hJtFUmJaj62fDgJsFaFdDXIjt5KST5v7TX8biLZ8jSgTFRUvqjfnvg1cCYCIqYzw013nQCOGCYpt/h/ZjOA+XB6ea8Tkl93PM6w9g00wU9GdamxLrYyg8eS1nXb1gafAU08DpvNHqwVG4OFUQccB/KyRNlN3LKjaojKaPte+MTs9XEw==",
+      "publicKey": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwLSIjoeRkmvrP0S48TH3DN/7PI4Zq6cROTdvYty+RYW5tPgNDRfAK6MLEqU1PcRMSsLiyKQhFS5QVr6D03j3nZ7yIxVckh+f01J1rNUmqnooRsUhawXZV6QPe8B1JaqtLSzJaDLaUyjLqym1LVfsWmAEnDzq/HD3VG4/SS/NYRJzXeArz/vWbDduaCZ97y4JmOjOiiRNwqRYn9mIY7T82Ycdz+WA7TE0XbK8UBEFkd/G06lckbuOLqGZc4A06Wv4FcTQn3gzdVFmMUKQRyYVFhlGftLRXKG/Ze+s0oiMtWhZR73XL9Uo+fiauYdW4CxPPnFw9CgvPh9arPdDCKbVKwIDAQAB",
+      "originalVoucherId": "VOUCH-TEST-GREEN-1",
+      "status": "DUPLICATE_DOUBLE_SPEND",
+      "rejectionReason": "⚠️ Double-spend attack blocked! Original Voucher ID 'VOUCH-TEST-GREEN-1' was already executed and settled on the UPI ledger.",
+      "settledAt": "2026-08-27T04:40:10.939Z",
+      "createdAt": "2026-08-27T04:40:10.940Z",
+      "updatedAt": "2026-08-27T04:40:10.940Z"
+    },
+    {
+      "voucherId": "VOUCH-TEST-RED-2",
+      "payerId": "rahul@offpay",
+      "receiverId": "priya@offpay",
+      "amount": 2500,
+      "currency": "INR",
+      "tier": "RED",
+      "nonce": "NONCE-222",
+      "timestamp": "2026-08-27T04:40:10.944Z",
+      "signature": "Tjctoujh65oZ+6yUmYgsRebT6Cr7p41+LOIl2yPX4q2cK6AdQ22PXd6Q9zo3/BwN90uDDTdN4ZMYWdJRFpLaUIp1eyiSSzmO2N75KqEvftIRenluDQuL8D3FQ3LAcj7AoWSUdRsdcul3ztGDuAffZmMd5jvs+vrswobb388hJtFUmJaj62fDgJsFaFdDXIjt5KST5v7TX8biLZ8jSgTFRUvqjfnvg1cCYCIqYzw013nQCOGCYpt/h/ZjOA+XB6ea8Tkl93PM6w9g00wU9GdamxLrYyg8eS1nXb1gafAU08DpvNHqwVG4OFUQccB/KyRNlN3LKjaojKaPte+MTs9XEw==",
+      "publicKey": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwLSIjoeRkmvrP0S48TH3DN/7PI4Zq6cROTdvYty+RYW5tPgNDRfAK6MLEqU1PcRMSsLiyKQhFS5QVr6D03j3nZ7yIxVckh+f01J1rNUmqnooRsUhawXZV6QPe8B1JaqtLSzJaDLaUyjLqym1LVfsWmAEnDzq/HD3VG4/SS/NYRJzXeArz/vWbDduaCZ97y4JmOjOiiRNwqRYn9mIY7T82Ycdz+WA7TE0XbK8UBEFkd/G06lckbuOLqGZc4A06Wv4FcTQn3gzdVFmMUKQRyYVFhlGftLRXKG/Ze+s0oiMtWhZR73XL9Uo+fiauYdW4CxPPnFw9CgvPh9arPdDCKbVKwIDAQAB",
+      "status": "BLOCKED",
+      "rejectionReason": "Exceeds offline transaction limit (Tier Red > ₹2,000). Active online authentication required.",
+      "settledAt": "2026-08-27T04:40:10.952Z",
+      "createdAt": "2026-08-27T04:40:10.952Z",
+      "updatedAt": "2026-08-27T04:40:10.952Z"
+    },
+    {
+      "voucherId": "VOUCH-TEST-TAMPER-3",
+      "payerId": "rahul@offpay",
+      "receiverId": "priya@offpay",
+      "amount": 499,
+      "currency": "INR",
+      "tier": "GREEN",
+      "nonce": "NONCE-333",
+      "timestamp": "2026-08-27T04:40:10.957Z",
+      "signature": "INVALID_FORGED_SIGNATURE_AAAAAAAAAAAAAAAAAAAAAAAA",
+      "publicKey": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwLSIjoeRkmvrP0S48TH3DN/7PI4Zq6cROTdvYty+RYW5tPgNDRfAK6MLEqU1PcRMSsLiyKQhFS5QVr6D03j3nZ7yIxVckh+f01J1rNUmqnooRsUhawXZV6QPe8B1JaqtLSzJaDLaUyjLqym1LVfsWmAEnDzq/HD3VG4/SS/NYRJzXeArz/vWbDduaCZ97y4JmOjOiiRNwqRYn9mIY7T82Ycdz+WA7TE0XbK8UBEFkd/G06lckbuOLqGZc4A06Wv4FcTQn3gzdVFmMUKQRyYVFhlGftLRXKG/Ze+s0oiMtWhZR73XL9Uo+fiauYdW4CxPPnFw9CgvPh9arPdDCKbVKwIDAQAB",
+      "status": "FAILED_FRAUD",
+      "rejectionReason": "Security verification failed: Cryptographic signature mismatch (tampering detected)",
+      "settledAt": "2026-08-27T04:40:10.963Z",
+      "createdAt": "2026-08-27T04:40:10.963Z",
+      "updatedAt": "2026-08-27T04:40:10.963Z"
+    }
+  ],
+  "settledNonces": {
+    "NONCE-111": {
+      "voucherId": "VOUCH-TEST-GREEN-1",
+      "settledAt": "2026-08-27T04:40:10.916Z"
+    }
+  },
   "metrics": {
     "totalSettledAmount": 0,
-    "blockedAttempts": 0,
-    "fraudAttempts": 0,
-    "doubleSpendAttempts": 0,
+    "blockedAttempts": 1,
+    "fraudAttempts": 1,
+    "doubleSpendAttempts": 1,
     "relayForwardCount": 0
   }
 }
